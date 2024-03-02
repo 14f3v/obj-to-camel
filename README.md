@@ -42,6 +42,32 @@ camelCasedObject: {
 }
 */
 ```
+### Support for nested object
+```typescript
+import objToCamel from '@14f3v/obj-to-camel';
+
+const originalObject = {
+    FULL_NAME: "foo",
+    FAMILY_NAME: "bar",
+    IDENTITY: {
+        HOLDER_NAME: "foo",
+        HOLDER_SURNAME: "bar",
+    },
+};
+
+const camelCasedObject = objToCamel(originalObject);
+
+console.log(camelCasedObject);
+/* // ? return object would be
+camelCasedObject: {
+    fullName: "foo",
+    familyName: "bar",
+    identity: {
+        holderName: "foo",
+        holderSurname: "bar",
+    },
+}
+```
 
 ## Function Signature
 ```typescript
