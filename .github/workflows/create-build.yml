@@ -1,0 +1,53 @@
+name: create-build
+
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  install-dependencies:
+    permissions:
+      contents: read
+      pages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+        with:
+          ref: "main"
+          token: ${{ secrets.GH_PAT }}
+      - run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git pull origin ${{ github.head_ref }}
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.1.0
+      - run: |
+          bun install
+          bun run build
+      - name: check for build updated
+        id: newFiles
+        shell: bash
+        run: |
+          git rev-parse --abbrev-ref HEAD
+          git status
+          git add -A
+          git status --porcelain | wc -l
+          if [[ $(git status --porcelain | wc -l) -gt 0 ]]; then
+              echo "::set-output name=hasNewFiles::true"
+          else
+              echo "::set-output name=hasNewFiles::false"
+          fi
+      - name: Push built files to pre-build branch
+        # if: ${{ steps.newFiles.outputs.hasNewFiles == 'true' }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git push -f origin main
+      - name: Push built files to pre-build branch
+        if: ${{ steps.newFiles.outputs.hasNewFiles == 'true' }}
+        run: |
+          git add .
+          git commit -m "push build"
+          git push -f origin main
